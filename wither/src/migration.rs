@@ -9,7 +9,7 @@ use crate::model::Model;
 #[async_trait]
 pub trait Migrating: Model {
     /// All migrations associated with this model.
-    fn migrations() -> Vec<Box<dyn Migration<Self>>>;
+    fn migrations() -> Vec<Box<dyn Migration>>;
 
     /// Execute all migrations for this model.
     async fn migrate(db: &Database) -> Result<()> {
@@ -29,11 +29,12 @@ pub trait Migrating: Model {
 }
 
 /// A trait describing objects which encapsulate a schema migration.
+///
 #[cfg_attr(feature = "docinclude", doc(include = "../docs/migrations-overview.md"))]
 #[async_trait]
-pub trait Migration<T>: Send + Sync {
+pub trait Migration: Send + Sync {
     /// The function which is to execute this migration.
-    async fn execute<'c>(&self, coll: &'c Collection<T>) -> Result<()>;
+    async fn execute<'c>(&self, coll: &'c Collection) -> Result<()>;
 }
 
 /// A migration type which allows execution until the specifed `threshold` date. Then will no-op.
@@ -60,8 +61,8 @@ pub struct IntervalMigration {
 }
 
 #[async_trait]
-impl<T: Sync> Migration<T> for IntervalMigration {
-    async fn execute<'c>(&self, coll: &'c Collection<T>) -> Result<()> {
+impl Migration for IntervalMigration {
+    async fn execute<'c>(&self, coll: &'c Collection) -> Result<()> {
         let ns = coll.namespace();
         log::info!("Executing migration '{}' against '{}'.", &self.name, ns);
 
