@@ -205,7 +205,7 @@ where
         // Update instance ID if needed.
         if id_needs_update {
             let response_id = updated_doc.get_str("_id").map_err(|_| WitherError::ServerFailedToReturnObjectId)?;
-            self.set_id(response_id);
+            self.set_id(response_id.to_string());
         };
         Ok(())
     }
