@@ -11,6 +11,8 @@ use mongodb::results::DeleteResult;
 use mongodb::{Collection, Database};
 use serde::{de::DeserializeOwned, Serialize};
 
+use ulid::Ulid;
+
 use crate::common::IndexModel;
 use crate::cursor::ModelCursor;
 use crate::error::{Result, WitherError};
@@ -40,10 +42,10 @@ where
     const COLLECTION_NAME: &'static str;
 
     /// Get the ID for this model instance.
-    fn id(&self) -> Option<ObjectId>;
+    fn id(&self) -> Option<String>;
 
     /// Set the ID for this model.
-    fn set_id(&mut self, id: ObjectId);
+    fn set_id(&mut self, id: String);
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // ReadConcern, WriteConcern & SelectionCritieria ////////////////////////////////////////////
@@ -179,7 +181,7 @@ where
         let filter = match (self.id(), filter) {
             (Some(id), _) => doc! {"_id": id},
             (None, None) => {
-                let new_id = ObjectId::new();
+                let new_id = Ulid::new().to_string();
                 self.set_id(new_id.clone());
                 doc! {"_id": new_id}
             }
@@ -203,7 +205,7 @@ where
         // Update instance ID if needed.
         if id_needs_update {
             let response_id = updated_doc.get_object_id("_id").map_err(|_| WitherError::ServerFailedToReturnObjectId)?;
-            self.set_id(response_id.clone());
+            self.set_id(response_id.to_string());
         };
         Ok(())
     }
