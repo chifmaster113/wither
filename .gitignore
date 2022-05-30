@@ -6,3 +6,8 @@
 
 # VSCode files
 .vscode/
+
+# misc
+.DS_Store
+
+.Cargo.lock
