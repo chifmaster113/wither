@@ -192,7 +192,7 @@ where
             let response_id = updated_doc
                 .get_object_id("_id")
                 .map_err(|_| WitherError::ServerFailedToReturnObjectId)?;
-            self.set_id(response_id);
+            self.set_id(response_id.to_string());
         };
         Ok(())
     }
